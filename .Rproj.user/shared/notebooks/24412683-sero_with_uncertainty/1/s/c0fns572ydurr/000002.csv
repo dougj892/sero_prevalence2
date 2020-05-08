@@ -1,0 +1,22 @@
+"0","```r
+# Gender, Age_gender, State, Age, Eth, Inc
+sample$Age_Gen <- sample$male*7+sample$age
+sero_data <- list(N = nrow(sample),
+                   Gender = sample$male,
+                   Age_Gen = sample$Age_Gen,
+                   State = sample$state, 
+                   Age = sample$age,
+                   Eth = sample$eth,
+                   Inc = sample$income,
+                   y = sample$test,
+                   tp = tp,  
+                   fn = fn,
+                   tn = tn,
+                   fp = fp)
+
+
+stan_fit <- stan(
+  file = file.path(path, \"sero_with_noise.stan\"),  # Stan program
+  data = sero_data
+  )
+```"

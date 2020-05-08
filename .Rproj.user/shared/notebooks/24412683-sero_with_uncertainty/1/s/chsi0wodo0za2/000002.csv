@@ -1,0 +1,7 @@
+"0","```r
+sero_sim <- simulate_mrp_data(n=1000)
+sample <- sero_sim[['sample']]
+poststrat <- sero_sim[['poststrat']]
+true_popn <- sero_sim[['true_popn']]
+
+```"

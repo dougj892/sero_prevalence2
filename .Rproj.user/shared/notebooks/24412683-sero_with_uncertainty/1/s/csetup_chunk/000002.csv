@@ -1,0 +1,15 @@
+"0","```r
+library(rstanarm)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(rstan)
+library(caret)
+library(boot)
+library(rstan)
+
+path <- \"C:/Users/dougj/Documents/code/seroprevalence\"
+# options(mc.cores = parallel::detectCores())
+source(\"C:/Users/dougj/Documents/code/seroprevalence/simulate_mrp_data_w_noise.R\")
+
+```"

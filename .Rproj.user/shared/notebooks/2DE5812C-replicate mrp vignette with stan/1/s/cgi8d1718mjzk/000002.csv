@@ -1,0 +1,6 @@
+"0","```r
+mrp_sim <- simulate_mrp_data(n=1200)
+sample <- mrp_sim[['sample']]
+poststrat <- mrp_sim[['poststrat']]
+true_popn <- mrp_sim[['true_popn']]
+```"

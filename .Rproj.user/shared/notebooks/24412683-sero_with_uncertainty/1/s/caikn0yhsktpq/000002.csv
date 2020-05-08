@@ -1,0 +1,9 @@
+"0","```r
+# get the true overall prevalence
+true_popn_pref <- sum(true_popn$cat_pref * poststrat$N) / sum(poststrat$N)
+
+# get the mean and se of the estimate of true prevalence from stan_fit
+draws <- extract(stan_fit)
+```"
+"1","Error in extract(stan_fit) : object 'stan_fit' not found
+"

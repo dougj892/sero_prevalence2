@@ -1,0 +1,28 @@
+"0","```r
+# Create noisy test measure 
+#set.seed(8675309)
+tp <- 90  
+fn <- 10
+tn <- 95
+fp <- 5
+
+se <- rbeta(1, tp, fn)
+sp <- rbeta(1, tn, fp)
+print(se)
+```"
+"1","[1] 0.9134651
+"
+"0","```r
+print(sp)
+```"
+"1","[1] 0.9346221
+"
+"0","```r
+pos_correct <- rbinom(n = 1000, size = 1, prob = se)
+neg_correct <- rbinom(n = 1000, size = 1, prob = sp)
+
+sample$test <- sample$cat_pref*pos_correct+(1-sample$cat_pref)*(1-neg_correct)
+mean(sample$test)
+```"
+"1","[1] 0.176
+"

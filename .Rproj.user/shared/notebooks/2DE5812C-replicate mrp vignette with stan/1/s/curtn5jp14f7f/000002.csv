@@ -1,0 +1,47 @@
+"0","```r
+
+poststrat$Age_Gen <- poststrat$male*7+poststrat$age
+# Not using model.matrix  The problem with model.matrix is that it drops one category from each group.
+# X <- model.matrix( ~ -1+ factor(male) + factor(Age_Gen) + factor(state) + factor(age)+factor(eth)+factor(income),  data = poststrat)
+
+# Reshpae the poststrat dataframe to be composed of dummies
+poststrat_ordered <- poststrat[c(\"male\", \"Age_Gen\", \"state\", \"age\", \"eth\", \"income\")]
+poststrat_ordered <- lapply(poststrat_ordered, factor)
+ps_dummies <- dummyVars(\"~ .\", data = poststrat_ordered)
+ps_reshaped <- data.frame(predict(ps_dummies, newdata = poststrat_ordered))
+
+# Convert the draws to a dataframe
+draws <- as.data.frame(stan_fit) %>% select(-lp__)
+
+# check the dimensions of both
+dim(draws)
+```"
+"1","[1] 4000   79
+"
+"0","```r
+dim(ps_reshaped)
+```"
+"1","[1] 6300   79
+"
+"0","```r
+# Multiple draws * ps_reshaped'
+draws.x <- data.matrix(draws)
+ps_reshaped.x.t <- t(data.matrix(ps_reshaped))
+
+# multiply draws times the transposed reshaped matrix
+linpred <- draws.x %*% ps_reshaped.x.t
+
+# take the inverse logit of the linear predictor and then weight up
+stratum_preds <- inv.logit(linpred)
+agg_preds <- stratum_preds %*% poststrat$N / sum(poststrat$N)
+
+# finally, get the mean and standard deviation
+mean(agg_preds)
+```"
+"1","[1] 0.5915995
+"
+"0","```r
+sd(agg_preds)
+```"
+"1","[1] 0.02334332
+"

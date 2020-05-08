@@ -1,0 +1,18 @@
+"0","```r
+think_fit <- ulam(think_form$f, think_form$d)
+
+```"
+"1","SYNTAX ERROR, MESSAGE(S) FROM PARSER:
+ error in 'model252c62651548_91169fa92b867b8a366cf76bd23250d0' at line 70, column 540
+  -------------------------------------------------
+    68:     Intercept ~ normal( 0 , 10 );
+    69:     for ( i in 1:1200 ) {
+    70:         p[i] = Intercept + b_factormale1 * factormale1[i] + b_factorage2 * factorage2[i] + b_factorage3 * factorage3[i] + b_factorage4 * factorage4[i] + b_factorage5 * factorage5[i] + b_factorage6 * factorage6[i] + b_factorage7 * factorage7[i] + b_factormale1_X_factorage2 * factormale1_X_factorage2[i] + b_factormale1_X_factorage3 * factormale1_X_factorage3[i] + b_factormale1_X_factorage4 * factormale1_X_factorage4[i] + b_factormale1_X_factorage5 * factormale1_X_factorage5[i] + b_factormale1_X_factorage6 * factormale1_X_factorage6[i] + ;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ^
+    71:         p[i] =     b_factormale1_X_factorage7 * factormale1_X_factorage7[i] + v_state_Intercept[state[i]] + v_age_Intercept[age[i]] + v_eth_Intercept[eth[i]] + v_income_Intercept[income[i]];
+  -------------------------------------------------
+
+PARSER EXPECTED: <expression>
+Error in stanc(file = file, model_code = model_code, model_name = model_name,  : 
+  failed to parse Stan model '91169fa92b867b8a366cf76bd23250d0' due to the above error.
+"

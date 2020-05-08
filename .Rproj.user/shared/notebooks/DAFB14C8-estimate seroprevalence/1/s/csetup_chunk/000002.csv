@@ -1,0 +1,3 @@
+"0","library(tidyverse); library(rstan); library(glue); library(epiR)"
+"0","path <- ""C:/Users/dougj/Documents/code/sero_prevalence2"""
+"0","source(file.path(path, ""simulate_mrp_data_w_noise_random.R""))"

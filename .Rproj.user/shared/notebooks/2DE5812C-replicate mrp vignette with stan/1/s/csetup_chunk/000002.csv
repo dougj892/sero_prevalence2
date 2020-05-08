@@ -1,0 +1,88 @@
+"0","```r
+library(rstanarm)
+```"
+"1","Loading required package: Rcpp
+Registered S3 method overwritten by 'dplyr':
+  method           from
+  print.rowwise_df     
+Registered S3 methods overwritten by 'htmltools':
+  method               from         
+  print.html           tools:rstudio
+  print.shiny.tag      tools:rstudio
+  print.shiny.tag.list tools:rstudio
+Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+rstanarm (Version 2.19.3, packaged: 2020-02-11 05:16:41 UTC)
+- Do not expect the default priors to remain the same in future rstanarm versions.
+Thus, R scripts should specify priors explicitly, even if they are just the defaults.
+- For execution on a local, multicore CPU with excess RAM we recommend calling
+options(mc.cores = parallel::detectCores())
+- bayesplot theme set to bayesplot::theme_default()
+   * Does _not_ affect other ggplot2 plots
+   * See ?bayesplot_theme_set for details on theme setting
+"
+"0","```r
+library(ggplot2)
+library(dplyr)
+```"
+"1","
+Attaching package: ã¤¼ã¸±dplyrã¤¼ã¸²
+
+The following objects are masked from ã¤¼ã¸±package:statsã¤¼ã¸²:
+
+    filter, lag
+
+The following objects are masked from ã¤¼ã¸±package:baseã¤¼ã¸²:
+
+    intersect, setdiff, setequal, union
+"
+"0","```r
+library(tidyr)
+library(rstan)
+```"
+"1","Loading required package: StanHeaders
+rstan (Version 2.19.3, GitRev: 2e1f913d3ca3)
+For execution on a local, multicore CPU with excess RAM we recommend calling
+options(mc.cores = parallel::detectCores()).
+To avoid recompilation of unchanged Stan programs, we recommend calling
+rstan_options(auto_write = TRUE)
+For improved execution time, we recommend calling
+Sys.setenv(LOCAL_CPPFLAGS = '-march=corei7 -mtune=corei7')
+although this causes Stan to throw an error on a few processors.
+
+Attaching package: ã¤¼ã¸±rstanã¤¼ã¸²
+
+The following object is masked from ã¤¼ã¸±package:tidyrã¤¼ã¸²:
+
+    extract
+"
+"0","```r
+library(caret)
+```"
+"1","Loading required package: lattice
+Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+
+Attaching package: ã¤¼ã¸±caretã¤¼ã¸²
+
+The following objects are masked from ã¤¼ã¸±package:rstanarmã¤¼ã¸²:
+
+    compare_models, R2
+"
+"0","```r
+library(boot)
+```"
+"1","
+Attaching package: ã¤¼ã¸±bootã¤¼ã¸²
+
+The following object is masked from ã¤¼ã¸±package:latticeã¤¼ã¸²:
+
+    melanoma
+"
+"0","```r
+path <- \"C:/Users/dougj/Documents/code/seroprevalence\"
+# options(mc.cores = parallel::detectCores())
+source(\"C:/Users/dougj/Documents/code/seroprevalence/simulate_mrp_data.R\")
+```"
