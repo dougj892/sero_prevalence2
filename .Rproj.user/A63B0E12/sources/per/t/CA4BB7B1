@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1589266540498.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3088364436",
+    "id" : "CA4BB7B1",
+    "lastKnownWriteTime" : 1589267892,
+    "last_content_update" : 1589267892124,
+    "path" : "~/code/new_blog/content/post/2020-05-06-estimating-seroprevalence-with-data-from-an-imperfect-test-on-a-convenience-sample.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "76,0",
+        "scrollLine" : "61"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

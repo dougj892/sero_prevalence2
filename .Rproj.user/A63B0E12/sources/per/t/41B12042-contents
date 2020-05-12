@@ -1,14 +1,13 @@
 ---
-title: "Estimate seroprevalence with data from an imperfect test administered to a convenience sample"
+title: "Assess estimation approaches using Monte Carlo"
 output: html_notebook
 ---
 
-This notebook compares the performance of two different approaches to estimating seroprevalance given data from an imperfect test administered to a convenience sample. In the first approach, I break up the data into strata, calculate true prevalence and a confidence interval for the true prevalence use the epi.R package. I then calculate the variance of the estimate for each stratum by using the confidence interval and assuming normality. Finally, I use the standard formualas for combing estimates from different strata from stratified sampling.
+This notebook compares the performance of two different approaches to estimating seroprevalance given data from an imperfect test administered to a convenience sample. 
 
-In the second approach, I use a modified version of multi-level regression and poststratification. 
-See the blog post [here]() for more information on the two approaches.
+If you are just looking to find code to copy and adapt, I suggest you look at the R notebook "Estimate seroprevalence" instead. 
 
-I compare these two approaches using a Monte Carlo simulation  Nearly all of the code to generate the simulated data is from the R vignette [MRP with rstanarm](https://cran.r-project.org/web/packages/rstanarm/vignettes/mrp.html) by Lauren Kennedy and Jonah Gabry. (Reproduced with their permission.)  Much of the Stan MRP code borrows from the code in the user guide.
+Nearly all of the code to generate the simulated data is from the R vignette [MRP with rstanarm](https://cran.r-project.org/web/packages/rstanarm/vignettes/mrp.html) by Lauren Kennedy and Jonah Gabry. (Reproduced with their permission.)  Much of the Stan MRP code borrows from the code in the user guide.
 
 ```{r setup, message=FALSE}
 library(tidyverse); library(rstan); library(glue); library(epiR)
@@ -99,7 +98,7 @@ mmrp_data <-  list(N = nrow(sample),
 
 
 mmrp_fit <- stan(
-  file = file.path(path, "mrp_with_uncertainty.stan"),
+  file = file.path(path, "stan_code", "mrp_with_uncertainty.stan"),
   data = mmrp_data, 
   iter = 1000, chains = 3
   )
@@ -163,7 +162,7 @@ pa_simple <- sum(res$pa_total*res$N*(1/res$n))/NT
 se_hat <-  tp/(tp+fn)
 sp_hat <- tn/(tn+fp)
 mc_results$pt_simple[q] <- (pa_simple+sp_hat-1)/(se_hat+sp_hat-1)
-write_csv(poststrat, file.path(path, paste("mcr1", Sys.Date(), ".csv")))
+write_csv(poststrat, file.path(path, "monte_carlo_output", paste("mcr1", Sys.Date(), ".csv")))
 }
 ```
 
