@@ -1,7 +1,0 @@
-"0","write_csv(mc_results, file.path(path, ""mcr1.csv"")
-}
-"
-"2","Error: unexpected '}' in:
-""write_csv(mc_results, file.path(path, ""mcr1.csv"")
-}""
-"

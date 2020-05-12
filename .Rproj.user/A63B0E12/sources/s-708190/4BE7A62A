@@ -1,0 +1,28 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1589003453933.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4BE7A62A",
+    "lastKnownWriteTime" : 1589264779,
+    "last_content_update" : 1589264779788,
+    "path" : "~/code/sero_prevalence2/Estimate seroprevalence.Rmd",
+    "project_path" : "Estimate seroprevalence.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "cursorPosition" : "74,32",
+        "last_setup_crc32" : "708190681c7c7f",
+        "scrollLine" : "48",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

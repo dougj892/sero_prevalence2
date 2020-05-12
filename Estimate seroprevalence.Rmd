@@ -1,0 +1,153 @@
+---
+title: "Estimate seroprevalence using a simple and not-so-simple approach"
+output: html_notebook
+---
+
+In this notebook, I estimate seroprevalence using two different approaches. The first, simple approach simply combines poststratification and the Rogan Gladen correction to account for test imperfections.  The second approach uses a modified versio of multi-level regression and poststratification to more accurately model the data. I fit the MRP approach using both native Stan and the BRMS package.
+
+For more information the two approaches, see my blog at www.dougjohnson.in. 
+
+Nearly all of the code to generate the simulated data is from the R vignette [MRP with rstanarm](https://cran.r-project.org/web/packages/rstanarm/vignettes/mrp.html) by Lauren Kennedy and Jonah Gabry. (Reproduced with their permission.)  Much of the Stan MRP code borrows from the code in the user guide.
+
+## Generate data
+
+Load the relevant libraries and generate simulated data using a slightly modified version of Kennedy and Gabry's code.
+
+```{r setup, message=FALSE}
+library(tidyverse); library(rstan); library(glue); library(brms); library(caret)
+path <- "C:/Users/dougj/Documents/code/sero_prevalence2"
+source(file.path(path, "functions", "simulate_mrp_data_w_noise_random.R"))
+
+sero_sim <- simulate_mrp_data(n=1000)
+sample <- sero_sim[['sample']]
+poststrat <- sero_sim[['poststrat']]
+true_popn <- sero_sim[['true_popn']]
+
+# Data from evaluation of antibody test on samples with disease and negative controls 
+tp <- 90  # true positives - disease samples with correct test output
+fn <- 10  # false negatives - disease samples with incorrect test output
+tn <- 95  # true negatives - negative controls with correct test output
+fp <- 5   # false positives - negative controls with incorrect test output
+
+
+#set.seed(8675309)
+se <- rbeta(1, tp, fn)
+sp <- rbeta(1, tn, fp)
+glue("Sensivity: {round(se, 2)}")
+glue("Specificity: {round(sp, 2)}")
+
+# Create binary vectors for whether the antibody test would give the correct result
+# (Creating two vectors saves time because the assignment can then be easily vectorized)
+pos_correct <- rbinom(n = 1000, size = 1, prob = se)
+neg_correct <- rbinom(n = 1000, size = 1, prob = sp)
+
+sample$test <- sample$cat_pref*pos_correct+(1-sample$cat_pref)*(1-neg_correct)
+
+true_popn_pref <- sum(true_popn$cat_pref * poststrat$N) / sum(poststrat$N)
+```
+
+## Estimate seroprevalance using the simple approach
+
+I first estimate the overall seroprevalence using the really simple approach.  Note that I first collapse down to a manageable number of strata.  Otherwise, there are many strata for which we have no observations in the sample dataset.
+
+```{r}
+# collapse the sample and poststrat data on state and age
+sample_collapsed <- sample %>% 
+  group_by(male, eth, income) %>% 
+  summarize(pt_total = sum(cat_pref), pa_total = sum(test), n = n())
+
+poststrat_collapsed <- poststrat %>% 
+  group_by(male, eth, income) %>% 
+  summarize(N = sum(N))
+
+# merge sample data with poststrat collapsed
+res <- sample_collapsed %>% left_join(poststrat_collapsed, by = c("male", "eth", "income"), keep.all = TRUE)
+
+# calculate pt_simple
+NT <- sum(res$N)
+pa_simple <- sum(res$pa_total*res$N*(1/res$n))/NT
+se_hat <-  tp/(tp+fn)
+sp_hat <- tn/(tn+fp)
+pt_simple <- (pa_simple+sp_hat-1)/(se_hat+sp_hat-1)
+glue("The simple estimate of prevalence is {round(pt_simple, 3)}")
+```
+
+## Esimate seroprevalence using 
+
+```{r fit_mrp}
+fit1 <- brm(
+  cat_pref ~ factor(male) + factor(male) * factor(age) +
+    (1 | state) + (1 | age) + (1 | eth) + (1 | income),
+  family = binomial(link = "logit"),
+  data = sample,
+  iter = 500,
+  chain = 2
+)
+
+cat(stancode(fit1), file = file.path(path, "brms_code1.stan"))
+model_data <- standata(fit1)
+
+# Generate predictions using the poststrat data
+posterior_prob <- predict(fit1, newdata = poststrat, allow_new_levels = TRUE)
+poststrat_prob <- posterior_prob[,1] %*% poststrat$N / sum(poststrat$N)
+
+glue("True pop prevalence: {round(true_popn_pref,3)}; estimate: {round(poststrat_prob, 3)}")
+```
+
+Attempt to fit the noisy data with brms.
+
+```{r fit_mrp_w_noise}
+# Define the custom family to add to BRMs
+sero_noise <- custom_family(
+  "sero_noise", 
+  links = c("logit"), 
+  type = "int"
+)
+
+stan_funs <- glue("
+  real sero_noise_lpmf(int y, real mu) {{
+    real pt;
+    pt = mu*{tp/(tp+fn)}+(1-mu)*({1-(tn/(tn+fp))});
+    return bernoulli_lpmf(y | pt);
+  }}
+  real sero_noise_rng(real mu) {{
+    return bernoulli_rng(mu);
+  }}
+")
+
+stanvars <- stanvar(scode = stan_funs, block = "functions")
+
+fit2 <- brm(
+  test | trials(1) ~ factor(male) + factor(male) * factor(age) + 
+    (1 | state) + (1 | age) + (1 | eth) + (1 | income),
+  family = sero_noise,
+  data = sample, stanvars = stanvars,
+  save_all_pars = TRUE
+)
+
+
+cat(stancode(fit2), file = file.path(path, "brms_code2.stan"))
+model_data2 <- standata(fit2)
+
+```
+
+Generate predictions. Not quite sure how this will work on new data
+
+```{r gen_predictions}
+posterior_predict_sero_noise <- function(i, draws, ...) {
+  draws$dpars$mu[, i]
+}
+
+# test out the predict function on existing data
+test <- predict(fit2)
+
+
+# Generate predictions using the poststrat data
+posterior_prob <- predict(fit2, newdata = poststrat, allow_new_levels = TRUE)
+
+# The posterior predict function uses the predicted value of the prevalence. This is Ok as long as we are just seeking point estimates. To fully account for uncertainty, we should draw from binom(N, p = posterior_prob[i])
+poststrat_prob <- posterior_prob[,1] %*% poststrat$N / sum(poststrat$N)
+```
+
+
+

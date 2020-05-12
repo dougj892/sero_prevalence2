@@ -1,1 +1,0 @@
-{"frames":[],"message":"Error: unexpected '}' in:\n\"write_csv(mc_results, file.path(path, \"mcr1.csv\")\n}\"\n"}
