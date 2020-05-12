@@ -70,12 +70,14 @@ pa_simple <- sum(res$pa_total*res$N*(1/res$n))/NT
 se_hat <-  tp/(tp+fn)
 sp_hat <- tn/(tn+fp)
 pt_simple <- (pa_simple+sp_hat-1)/(se_hat+sp_hat-1)
+pt_simple_se <- (pa_simple*(1-pa_simple)/(1000*(se_hat+sp_hat-1)^2))^.5
 glue("The simple estimate of prevalence is {round(pt_simple, 3)}")
+glue("With a standard error of {round(pt_simple_se, 3)}")
 ```
 
 ## Esimate seroprevalence using modified MRP and Stan
 
-Next, estimate seroprevalence using MRP and native Stan.
+Next, estimate seroprevalence using MRP and native Stan. Note that estimating effects by subgroup would require changing the raw stan code. (In particular, this would require modifying the code in the "generated quantities" stan block.)
 
 ```{r mmrp_stan}
 
@@ -119,12 +121,15 @@ mmrp_fit <- stan(
   )
 
 # Inspect Stan output and compare to the true population figures and the unweighted sample figures.
+# The variable phi is the predicted true prevalence for each stratum.
 mmrp_draws <- extract(mmrp_fit)
 se_posterior <- mean(mmrp_draws$se)
 sp_posterior <- mean(mmrp_draws$sp)
 pt_pop_posterior <- mean(mmrp_draws$phi)
 
 glue("The not-so-simple estimate of prevalence is {round(pt_pop_posterior, 3)}")
+cat("The 90% credible interval is")
+quantile(extract(mmrp_fit, pars = "phi")[[1]], probs = c(0.05, 0.95))
 ```
 
 ## Estimate seroprevalance using the not-so-simple approach and BRMS
@@ -169,6 +174,8 @@ model_data2 <- standata(fit2)
 Next, I generate predictions using the fitted BRMS object.
 
 ```{r gen_predictions}
+
+# Note that my definition of predict is more like "fitted"
 posterior_predict_sero_noise <- function(i, draws, ...) {
   draws$dpars$mu[, i]
 }
@@ -180,10 +187,19 @@ test <- predict(fit2)
 # Generate predictions using the poststrat data
 posterior_prob <- predict(fit2, newdata = poststrat, allow_new_levels = TRUE)
 
-# The posterior predict function uses the predicted value of the prevalence. This is Ok as long as we are just seeking point estimates. To fully account for uncertainty, we should draw from binom(N, p = posterior_prob[i])
+# Use pt_hat to generate overall prediction
 poststrat_prob <- posterior_prob[,1] %*% poststrat$N / sum(poststrat$N)
-
 glue("The not-so-simple estimate of prevalence using BRMS is {round(poststrat_prob, 3)}")
+
+  
+# Look at the estimated effects just for men
+male_estimate <- posterior_prob[poststrat$male==1,1]%*% poststrat$N[poststrat$male==1] / sum(poststrat$N[poststrat$male==1])
+glue("The not-so-simple estimate of prevalence among men using BRMS is {round(male_estimate, 3)}")
+
+# Unclear how to generate credible intervals for these quantities.  Ideally, brms would spit out draws of mu and then, for each vector of draws of mu, I could draw from the binomial using N_h, the vector of stratum sizes.  Unclear how to get the draws of mu from brms right now.
+
+
+
 
 ```
 
