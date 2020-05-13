@@ -1,0 +1,5 @@
+"0","hh_chart_wide <- hh_chart %>% pivot_wide(-quintile, names_from = own_or_watch, values_from = share)
+"
+"2","Error in pivot_wide(., -quintile, names_from = own_or_watch, values_from = share) : 
+  could not find function ""pivot_wide""
+"

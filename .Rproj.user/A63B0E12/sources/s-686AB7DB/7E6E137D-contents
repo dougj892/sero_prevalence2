@@ -1,0 +1,98 @@
+---
+title: "TV ownership and watching from IHDS"
+output: html_notebook
+---
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(haven)
+```
+
+Import the data
+
+```{r}
+ihds_hh_dir <- "C:/Users/dougj/Documents/Data/IHDS/IHDS 2012/DS0002"
+hh_file <- file.path(ihds_hh_dir, "36151-0002-Data.dta")
+
+id_vars <- c("WT", "STATEID", "DISTID", "PSUID", "HHID", "HHSPLITID", "IDPSU", "WT", "COPC")
+
+partial <- read_dta(hh_file, n_max = 10)
+
+
+getLabels <- function(df) {
+  var_names <- colnames(df)
+  var_labels <- lapply(df, function(x) attributes(x)$label)
+  df_new <- tibble(var_mames = var_names, var_labels=var_labels)
+}
+vars <- getLabels(partial)
+
+# MM4C - # of hours TV children
+# MM3C - how often TV children
+# CGTV - owns TV
+an_vars <- c("MM4C", "MM3C", "CGTV")
+
+use_vars <- c(id_vars, an_vars)
+
+hh <- read_dta(hh_file, col_select = use_vars)
+```
+
+Generate quintiles from COPC and look at TV ownership and watching by quintile.
+
+```{r}
+hh <- hh %>% mutate(quintile = ntile(COPC,5))
+
+hh$child_watch <- hh$MM3C >=2
+
+hh$child_watch <- ifelse(is.na(hh$child_watch), 0, hh$child_watch)
+
+
+hh %>% 
+  group_by(quintile) %>% 
+  summarise_at(vars(CGTV, child_watch), funs(weighted.mean(., w=WT, na.rm = TRUE)))
+
+hh %>% 
+  summarise_at(vars(CGTV, child_watch), funs(weighted.mean(., w=WT, na.rm = TRUE)))
+
+
+# what portion of 
+hh %>% group_by(CGTV) %>% summarize(mean_watch =weighted.mean(child_watch, w=WT, na.rm = TRUE), n())
+
+```
+
+Create variable with value 0 if own TV, 1 if don't own but children watch TV elsewhere, 2 if don't own and children don't watch.  Show values for each wealth quintile.
+
+```{r}
+# Create new variable for whether hh owns TV or child watches
+hh <- hh %>% mutate(own_or_watch = case_when(
+  CGTV == 1 ~ "Own TV",
+  (CGTV == 0) & (child_watch == 1) ~ "Don't own, but children watch elsewhere",
+  (CGTV == 0) & (child_watch == 0) ~ "Don't own or watch elsewhere"
+))
+
+# Check for missing values
+sum(is.na(hh$own_or_watch))
+
+# Collapse the dataset to more easily create the bar chart
+hh_chart <- hh %>% 
+  filter(!is.na(own_or_watch)) %>% 
+  group_by(quintile, own_or_watch) %>% 
+  summarize(share = sum(WT))
+
+hh_chart <- hh_chart %>% 
+  group_by(quintile) %>% 
+  mutate(share = 100* share/(sum(share)))
+
+# Create chart showing 
+ggplot(data = hh_chart, aes(x = quintile, fill = own_or_watch, y = share)) +
+  geom_bar(stat = "identity")+
+  labs(x = "Consumption quintile", y = "Share households", title = "TV ownership / viewership by consumption quintile",
+       fill = "Legend",  caption ="Source: IHDS 2012")
+
+ggsave("C:/Users/dougj/Documents/op-eds/tv_graph_op_ed.png")
+
+hh_chart_wide <- hh_chart %>% pivot_wider(names_from = own_or_watch, values_from = share) %>%
+  filter(!is.na(quintile))
+write_csv(hh_chart_wide, path = "C:/Users/dougj/Documents/op-eds/tv_chart_data.csv")
+
+```
+

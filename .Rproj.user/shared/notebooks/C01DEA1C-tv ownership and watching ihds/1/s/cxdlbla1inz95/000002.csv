@@ -1,0 +1,28 @@
+"0","ihds_hh_dir <- ""C:/Users/dougj/Documents/Data/IHDS/IHDS 2012/DS0002"""
+"0","hh_file <- file.path(ihds_hh_dir, ""36151-0002-Data.dta"")"
+"0",""
+"0","id_vars <- c(""WT"", ""STATEID"", ""DISTID"", ""PSUID"", ""HHID"", ""HHSPLITID"", ""IDPSU"", ""WT"", ""COPC"")"
+"0",""
+"0","partial <- read_dta(hh_file, n_max = 10)"
+"0",""
+"0",""
+"0","getLabels <- function(df) {"
+"0","  var_names <- colnames(df)"
+"0","  var_labels <- lapply(df, function(x) attributes(x)$label)"
+"0","  df_new <- tibble(var_mames = var_names, var_labels=var_labels)"
+"0","}"
+"0","vars <- getLabels(partial)"
+"0",""
+"0","# MM4C - # of hours TV children"
+"0","# MM3C - how often TV children"
+"0","# CGTV - owns TV"
+"0","an_vars <- c(""MM4C"", ""MM3C"", ""CGTV"")"
+"0",""
+"0","use_vars <- c(id_vars, an_vars)"
+"0",""
+"0","hh <- read_dta(hh_file, col_select = use_vars)"
+"2","Note: Using an external vector in selections is ambiguous.
+[34mi[39m Use `all_of(use_vars)` instead of `use_vars` to silence this message.
+[34mi[39m See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
+[90mThis message is displayed once per session.[39m
+"

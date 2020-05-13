@@ -14,7 +14,7 @@ Nearly all of the code to generate the simulated data is from the R vignette [MR
 Load the relevant libraries and generate simulated data using a slightly modified version of Kennedy and Gabry's code.
 
 ```{r setup, message=FALSE}
-library(tidyverse); library(rstan); library(glue); library(brms); library(caret)
+library(tidyverse); library(rstan); library(glue); library(brms); library(caret); library(tidybayes)
 path <- "C:/Users/dougj/Documents/code/sero_prevalence2"
 source(file.path(path, "functions", "simulate_mrp_data_w_noise_random.R"))
 
@@ -191,15 +191,23 @@ posterior_prob <- predict(fit2, newdata = poststrat, allow_new_levels = TRUE)
 poststrat_prob <- posterior_prob[,1] %*% poststrat$N / sum(poststrat$N)
 glue("The not-so-simple estimate of prevalence using BRMS is {round(poststrat_prob, 3)}")
 
-  
+# Generate draws from the posterior and calculate a credible interval
+# Note that to account for full uncertainty, we have to randomly draw using binomial(.prediction)
+# rather than just look at uncertainty in the weighted mean of .prediction
+poststrat_draws <- add_predicted_draws(newdata = poststrat, model = fit2, n = 1000, allow_new_levels = TRUE)
+
+poststrat_draws$positives <- rbinom(n = nrow(poststrat_draws), size = poststrat_draws$N, prob = poststrat_draws$.prediction)
+
+predicted_draws <- poststrat_draws %>% 
+  group_by(.draw) %>% 
+  summarize(prev = sum(positives)/sum(N))
+
+cat("The 90% credible interval is")
+quantile(predicted_draws$prev, probs = c(0.05, 0.95))
+
 # Look at the estimated effects just for men
 male_estimate <- posterior_prob[poststrat$male==1,1]%*% poststrat$N[poststrat$male==1] / sum(poststrat$N[poststrat$male==1])
 glue("The not-so-simple estimate of prevalence among men using BRMS is {round(male_estimate, 3)}")
-
-# Unclear how to generate credible intervals for these quantities.  Ideally, brms would spit out draws of mu and then, for each vector of draws of mu, I could draw from the binomial using N_h, the vector of stratum sizes.  Unclear how to get the draws of mu from brms right now.
-
-
-
 
 ```
 

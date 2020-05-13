@@ -1,0 +1,22 @@
+"0","hh <- hh %>% mutate(quintile = ntile(COPC,5))"
+"0",""
+"0","hh$child_watch <- hh$MM3C >=2"
+"0",""
+"0","hh$child_watch <- ifelse(is.na(hh$child_watch), 0, hh$child_watch)"
+"0",""
+"0",""
+"0","hh %>% "
+"0","  group_by(quintile) %>% "
+"0","  summarise_at(vars(CGTV, child_watch), funs(weighted.mean(., w=WT, na.rm = TRUE)))"
+"2","funs() is soft deprecated as of dplyr 0.8.0
+Please use a list of either functions or lambdas: 
+
+  # Simple named list: 
+  list(mean = mean, median = median)
+
+  # Auto named with `tibble::lst()`: 
+  tibble::lst(mean, median)
+
+  # Using lambdas
+  list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
+[90mThis warning is displayed once per session.[39m"
